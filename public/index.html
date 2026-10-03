@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Top Announcement Header -->
+    <header class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white border-b border-sky-800/40 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-sky-600 flex items-center justify-center font-bold text-white shadow-md text-lg">
+                    <i data-lucide="database" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        Database Management System
+                    </h1>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3 text-xs">
+                <div id="backend-status" class="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="backend-status-text">SQLite REST API Active</span>
+                </div>
+                <button onclick="openTeamModal()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-md border border-slate-700 transition">
+                    <i data-lucide="users" class="w-3.5 h-3.5 text-sky-400"></i>
+                    <span>Team & Guide</span>
+                </button>
+                <button onclick="toggleCartDrawer()" class="relative bg-orange-600 hover:bg-orange-500 text-white px-3 py-1.5 rounded-md transition font-medium flex items-center gap-1.5 shadow-sm">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Cart</span>
+                    <span id="cart-badge-count" class="bg-white text-orange-600 rounded-full text-[11px] font-bold px-1.5 py-0.2 min-w-[18px] text-center">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <div class="bg-slate-900/90 border-t border-slate-800 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-3 overflow-x-auto py-2 text-sm">
+                <button onclick="switchTab('storefront')" id="nav-tab-storefront" class="nav-tab active flex items-center gap-2 px-3 py-1.5 rounded-md font-medium text-white bg-sky-600 transition whitespace-nowrap">
+                    <i data-lucide="store" class="w-4 h-4"></i>
+                    <span>Customer Storefront</span>
+                </button>
+                <button onclick="switchTab('dbms')" id="nav-tab-dbms" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                    <span>DBMS Admin Console (7 Tables)</span>
+                </button>
+                <button onclick="switchTab('erdiagram')" id="nav-tab-erdiagram" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap">
+                    <i data-lucide="network" class="w-4 h-4"></i>
+                    <span>ER Diagram & Schema</span>
+                </button>
+                <button onclick="switchTab('sql')" id="nav-tab-sql" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap">
+                    <i data-lucide="terminal" class="w-4 h-4"></i>
+                    <span>Live SQL Console</span>
+                </button>
+                <button onclick="switchTab('overview')" id="nav-tab-overview" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Project Overview</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: CUSTOMER STOREFRONT                                     -->
+        <!-- ============================================================== -->
+        <section id="tab-storefront" class="tab-content active space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-br from-sky-700 via-sky-800 to-indigo-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 bg-sky-500/20 text-sky-200 text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-sky-400/30">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                        <span>Live Relational Store Simulation</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Shop Quality Products, Powered by Relational Integrity</h2>
+                    <p class="mt-2 text-sky-100 text-sm leading-relaxed">
+                        Every order you place tests the database engine: customer binding, inventory validation, order items cascade, payment settlement, and delivery scheduling.
+                    </p>
+                    <div class="mt-5 flex flex-wrap gap-4 text-xs font-medium">
+                        <div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                            <span>PK/FK Verified</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+                            <i data-lucide="layers" class="w-4 h-4 text-sky-300"></i>
+                            <span>7 Relational Entities</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-300"></i>
+                            <span>Real-Time Inventory</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute right-[-20px] bottom-[-20px] opacity-10 pointer-events-none hidden md:block">
+                    <i data-lucide="shopping-bag" class="w-72 h-72 text-white"></i>
+                </div>
+            </div>
+
+            <!-- Category Filter & Search Bar -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <!-- Categories Pills -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" id="storefront-category-pills">
+                    <button onclick="filterCategory(null)" class="cat-pill active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 text-white transition">All Products</button>
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- Search and Sort -->
+                <div class="flex items-center gap-3">
+                    <div class="relative flex-1 sm:w-64">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="store-search-input" oninput="handleStoreSearch()" placeholder="Search products..." class="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition">
+                    </div>
+                    <select id="store-sort-select" onchange="handleStoreSort()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="featured">Sort: Featured</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="stock-desc">Stock: High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="store-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Loaded dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: DBMS ADMIN CONSOLE (7 Tables)                          -->
+        <!-- ============================================================== -->
+        <section id="tab-dbms" class="tab-content space-y-6">
+            <!-- DBMS Stats Overview Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="dbms-summary-cards">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Revenue</p>
+                        <h3 id="stat-revenue" class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">$0.00</h3>
+                        <span class="text-[11px] text-emerald-600 font-medium">From Orders table</span>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                        <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Orders</p>
+                        <h3 id="stat-orders" class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">0</h3>
+                        <span class="text-[11px] text-sky-600 font-medium">Connected records</span>
+                    </div>
+                    <div class="p-3 bg-sky-50 text-sky-600 rounded-xl">
+                        <i data-lucide="package-check" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Registered Users</p>
+                        <h3 id="stat-customers" class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">0</h3>
+                        <span class="text-[11px] text-indigo-600 font-medium">Customer entity</span>
+                    </div>
+                    <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Pending Deliveries</p>
+                        <h3 id="stat-deliveries" class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">0</h3>
+                        <span class="text-[11px] text-amber-600 font-medium">Fulfillment tracking</span>
+                    </div>
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                        <i data-lucide="truck" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entity Tabs Header -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="border-b border-slate-200 px-4 py-3 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="table" class="w-5 h-5 text-sky-600"></i>
+                        <span class="font-bold text-sm text-slate-800">Relational Database Tables:</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openAddRecordModal()" class="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span id="btn-add-record-label">Add Record</span>
+                        </button>
+                        <button onclick="resetDatabase()" title="Reset database with initial seed data" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 transition">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-600"></i>
+                            <span>Reset Seed DB</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 7 Entity Selection Tabs -->
+                <div class="flex border-b border-slate-200 overflow-x-auto px-4 bg-white" id="dbms-entity-tabs">
+                    <!-- Populated dynamically via JS: Customer, Product, Category, Order, Order_Item, Payment, Delivery -->
+                </div>
+
+                <!-- Table Controls (Search, Row Count, Schema Info) -->
+                <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/40 border-b border-slate-200 text-xs">
+                    <div class="flex items-center space-x-2 text-slate-600">
+                        <span class="font-medium text-slate-900" id="current-table-heading">Customer Table</span>
+                        <span class="text-slate-400">•</span>
+                        <span id="table-row-count-badge" class="bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded-full">0 rows</span>
+                        <span class="text-slate-400">•</span>
+                        <span id="table-keys-summary" class="text-slate-500">PK: Customer_ID</span>
+                    </div>
+
+                    <div class="relative sm:w-64">
+                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="dbms-table-search" oninput="filterCurrentTable()" placeholder="Filter current rows..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <!-- Responsive Data Table Container -->
+                <div class="overflow-x-auto max-h-[550px] overflow-y-auto">
+                    <table class="w-full text-left text-xs" id="dbms-data-table">
+                        <thead class="bg-slate-100/80 text-slate-700 font-semibold uppercase tracking-wider sticky top-0 border-b border-slate-200 shadow-sm" id="dbms-table-head">
+                            <!-- Injected by JS -->
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white" id="dbms-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: ER DIAGRAM & SCHEMA VISUALIZER                          -->
+        <!-- ============================================================== -->
+        <section id="tab-erdiagram" class="tab-content space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-xl font-bold text-slate-900">Conceptual Database Model (ER Diagram)</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Interactive architectural mapping showing primary keys (<span class="text-amber-600 font-semibold">PK</span>), foreign keys (<span class="text-sky-600 font-semibold">FK</span>), and cardinalities across all 7 entities.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <div class="flex items-center gap-1.5"><span class="badge-pk">🔑 PK</span> <span>Primary Key</span></div>
+                        <div class="flex items-center gap-1.5"><span class="badge-fk">🔗 FK</span> <span>Foreign Key</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded bg-slate-100 border text-slate-700 font-mono text-[10px]">1 : M</span> <span>One-to-Many</span></div>
+                    </div>
+                </div>
+
+                <!-- Interactive Visual ER Canvas / Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- 1. Category -->
+                    <div class="er-table-node bg-white border border-slate-300 rounded-xl overflow-hidden">
+                        <div class="bg-emerald-600 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="tag" class="w-4 h-4"></i> Category</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Entity #1</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Category_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Category_Name</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+                                <span>Relationship:</span>
+                                <span class="text-sky-700 font-medium">1 : M with Product</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Product -->
+                    <div class="er-table-node bg-white border border-slate-300 rounded-xl overflow-hidden">
+                        <div class="bg-sky-600 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="package" class="w-4 h-4"></i> Product</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Entity #2</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Product_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Product_Name</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Price</span>
+                                <span class="text-slate-400 font-mono text-[11px]">REAL</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Stock</span>
+                                <span class="text-slate-400 font-mono text-[11px]">INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-sky-50 rounded border border-sky-200/50">
+                                <span class="font-semibold text-sky-800">Category_ID</span>
+                                <span class="badge-fk">🔗 FK &rarr; Category</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Customer -->
+                    <div class="er-table-node bg-white border border-slate-300 rounded-xl overflow-hidden">
+                        <div class="bg-indigo-600 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="user" class="w-4 h-4"></i> Customer</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Entity #3</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Customer_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Name</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Email</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Phone</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Address</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Order -->
+                    <div class="er-table-node bg-white border-2 border-indigo-500 rounded-xl overflow-hidden shadow-md">
+                        <div class="bg-slate-900 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="shopping-cart" class="w-4 h-4 text-sky-400"></i> Order</span>
+                            <span class="text-[10px] bg-sky-500 text-white px-2 py-0.5 rounded font-semibold">Central Hub</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Order_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Order_Date</span>
+                                <span class="text-slate-400 font-mono text-[11px]">DATETIME</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-sky-50 rounded border border-sky-200/50">
+                                <span class="font-semibold text-sky-800">Customer_ID</span>
+                                <span class="badge-fk">🔗 FK &rarr; Customer</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Total_Amount</span>
+                                <span class="text-slate-400 font-mono text-[11px]">REAL</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Order_Item -->
+                    <div class="er-table-node bg-white border border-slate-300 rounded-xl overflow-hidden">
+                        <div class="bg-violet-600 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="list-ordered" class="w-4 h-4"></i> Order_Item</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Junction Bridge</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Order_Item_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-sky-50 rounded border border-sky-200/50">
+                                <span class="font-semibold text-sky-800">Order_ID</span>
+                                <span class="badge-fk">🔗 FK &rarr; Order</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-sky-50 rounded border border-sky-200/50">
+                                <span class="font-semibold text-sky-800">Product_ID</span>
+                                <span class="badge-fk">🔗 FK &rarr; Product</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Quantity</span>
+                                <span class="text-slate-400 font-mono text-[11px]">INT (> 0)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Payment -->
+                    <div class="er-table-node bg-white border border-slate-300 rounded-xl overflow-hidden">
+                        <div class="bg-amber-600 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="credit-card" class="w-4 h-4"></i> Payment</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Entity #6</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Payment_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-sky-50 rounded border border-sky-200/50">
+                                <span class="font-semibold text-sky-800">Order_ID</span>
+                                <span class="badge-fk">🔗 FK &rarr; Order</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Payment_Date</span>
+                                <span class="text-slate-400 font-mono text-[11px]">DATETIME</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Amount</span>
+                                <span class="text-slate-400 font-mono text-[11px]">REAL</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Status</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7. Delivery -->
+                    <div class="er-table-node bg-white border border-slate-300 rounded-xl overflow-hidden">
+                        <div class="bg-teal-600 text-white px-4 py-2 flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1.5"><i data-lucide="truck" class="w-4 h-4"></i> Delivery</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Entity #7</span>
+                        </div>
+                        <div class="p-3 text-xs space-y-2">
+                            <div class="flex items-center justify-between p-1.5 bg-amber-50/70 rounded border border-amber-200/50">
+                                <span class="font-semibold text-slate-800">Delivery_ID</span>
+                                <span class="badge-pk">🔑 PK • INT</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-sky-50 rounded border border-sky-200/50">
+                                <span class="font-semibold text-sky-800">Order_ID</span>
+                                <span class="badge-fk">🔗 FK &rarr; Order</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Delivery_Date</span>
+                                <span class="text-slate-400 font-mono text-[11px]">DATETIME</span>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded">
+                                <span class="text-slate-700">Status</span>
+                                <span class="text-slate-400 font-mono text-[11px]">TEXT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Relational Rules Summary Box -->
+                <div class="mt-8 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="git-merge" class="w-4 h-4 text-sky-600"></i>
+                        <span>Relational Business Rules</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-sky-700">Customer &rarr; Order (1 : M)</span>
+                            <p class="text-slate-600 mt-1">A customer can place multiple orders; each order belongs to one customer.</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-sky-700">Category &rarr; Product (1 : M)</span>
+                            <p class="text-slate-600 mt-1">A category can contain multiple products; each product references one category.</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-sky-700">Order &rarr; Order_Item (1 : M)</span>
+                            <p class="text-slate-600 mt-1">An order can contain multiple line items representing individual purchased items.</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-sky-700">Product &rarr; Order_Item (1 : M)</span>
+                            <p class="text-slate-600 mt-1">A product can appear in multiple order items across different orders.</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-sky-700">Order &rarr; Payment (1 : 1)</span>
+                            <p class="text-slate-600 mt-1">Payment details are strictly linked to an individual order via FK <code class="font-mono">Order_ID</code>.</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-sky-700">Order &rarr; Delivery (1 : 1)</span>
+                            <p class="text-slate-600 mt-1">Delivery fulfillment information is tied to an order with unique status tracking.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: LIVE SQL QUERY CONSOLE                                 -->
+        <!-- ============================================================== -->
+        <section id="tab-sql" class="tab-content space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="terminal" class="w-5 h-5 text-sky-600"></i>
+                            <span>Live SQL Query Playground</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Execute queries against SQLite `ecommerce.db` in real time to verify JOINs, aggregations, and DBMS integrity.
+                        </p>
+                    </div>
+                    <button onclick="executeCurrentQuery()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm self-start md:self-auto">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span>Run Query (Ctrl + Enter)</span>
+                    </button>
+                </div>
+
+                <!-- Preset Queries Buttons -->
+                <div class="space-y-2">
+                    <span class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Capstone Demo Preset Queries:</span>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button onclick="loadPresetQuery(1)" class="px-3 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg transition font-medium">
+                            1. Full Order Master (4-Table JOIN)
+                        </button>
+                        <button onclick="loadPresetQuery(2)" class="px-3 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg transition font-medium">
+                            2. Revenue & Sales by Category
+                        </button>
+                        <button onclick="loadPresetQuery(3)" class="px-3 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg transition font-medium">
+                            3. Customer Spending Analysis
+                        </button>
+                        <button onclick="loadPresetQuery(4)" class="px-3 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg transition font-medium">
+                            4. Pending Delivery Dispatch List
+                        </button>
+                        <button onclick="loadPresetQuery(5)" class="px-3 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg transition font-medium">
+                            5. Low Stock Alert (< 20 units)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SQL Query Editor Area -->
+                <div class="relative">
+                    <textarea id="sql-input" rows="5" class="w-full font-mono text-xs p-3.5 bg-slate-900 text-sky-300 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-inner" placeholder="Enter SQL query here..."></textarea>
+                    <div class="absolute right-3 bottom-3 text-[10px] text-slate-500 font-mono">
+                        SQLite 3.x
+                    </div>
+                </div>
+
+                <!-- Query Status / Metrics -->
+                <div id="query-meta-bar" class="hidden flex items-center justify-between text-xs py-2 px-3 bg-slate-100 rounded-lg text-slate-600 border border-slate-200 font-mono">
+                    <span id="query-result-info">0 rows returned</span>
+                    <span id="query-execution-time">0 ms</span>
+                </div>
+
+                <!-- Query Results Grid -->
+                <div class="overflow-x-auto max-h-[400px] overflow-y-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left text-xs" id="sql-results-table">
+                        <thead class="bg-slate-100 text-slate-700 font-semibold uppercase tracking-wider sticky top-0" id="sql-results-head">
+                            <tr><th class="px-4 py-3 text-slate-400">Click a preset query above or enter SQL and click 'Run Query'</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white" id="sql-results-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 5: CAPSTONE OVERVIEW & PRESENTATION SUMMARY                -->
+        <!-- ============================================================== -->
+        <section id="tab-overview" class="tab-content space-y-6">
+            <!-- Project Header Card -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div class="border-b border-slate-200 pb-5">
+                    <span class="text-xs font-bold text-sky-600 uppercase tracking-widest">Database Management System Project</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">E-Commerce Management System</h2>
+                    <p class="text-sm text-slate-600 mt-2">
+                        Relational database architecture for organizing, managing, and maintaining integrity across modern online shopping systems.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                        <span class="bg-slate-100 text-slate-800 px-3 py-1 rounded-md font-medium border border-slate-200">Department of Computer Science & Engineering</span>
+                        <span class="bg-sky-50 text-sky-700 px-3 py-1 rounded-md font-medium border border-sky-200">Under the Supervision of Mr. K. RAJENDRA</span>
+                    </div>
+                </div>
+
+                <!-- Problem Statement & Objectives -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-3">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-orange-600"></i>
+                            <span>The Problem Addressed</span>
+                        </h3>
+                        <p class="text-xs text-slate-600 italic">
+                            "How can an e-commerce platform organize its data so that customer, product, order, payment and delivery information remains connected, accurate and easy to retrieve?"
+                        </p>
+                        <div class="grid grid-cols-2 gap-2 pt-2 text-xs">
+                            <div class="bg-white p-2.5 rounded border border-slate-200">
+                                <span class="font-semibold text-slate-800">1. Data Duplication</span>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Eliminated via 3NF normalization.</p>
+                            </div>
+                            <div class="bg-white p-2.5 rounded border border-slate-200">
+                                <span class="font-semibold text-slate-800">2. Disconnected Records</span>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Linked by strict Foreign Keys.</p>
+                            </div>
+                            <div class="bg-white p-2.5 rounded border border-slate-200">
+                                <span class="font-semibold text-slate-800">3. Difficult Retrieval</span>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Fast querying with indexed tables.</p>
+                            </div>
+                            <div class="bg-white p-2.5 rounded border border-slate-200">
+                                <span class="font-semibold text-slate-800">4. Data Integrity</span>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Protected with CHECK & NOT NULL.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-3">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i data-lucide="target" class="w-4 h-4 text-sky-600"></i>
+                            <span>Key Project Objectives</span>
+                        </h3>
+                        <ul class="space-y-2 text-xs text-slate-700">
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
+                                <span><strong>Structured Database:</strong> Design a clear relational model for e-commerce operations.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center shrink-0 text-[10px]">2</span>
+                                <span><strong>Data Management:</strong> Efficiently organize customers, products, orders, payments, deliveries.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center shrink-0 text-[10px]">3</span>
+                                <span><strong>Integrity:</strong> Use PKs and FKs to maintain valid and referential relationships.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center shrink-0 text-[10px]">4</span>
+                                <span><strong>Low Redundancy:</strong> Reduce unnecessary duplication through structured design.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center shrink-0 text-[10px]">5</span>
+                                <span><strong>Easy Retrieval & Scalability:</strong> Support fast multi-table queries and an extensible foundation.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Team Work Allocation -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                        <span>Team Contributions & Role Allocation</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-gradient-to-b from-sky-50 to-white p-4 rounded-xl border border-sky-200">
+                            <div class="w-7 h-7 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center mb-2">1</div>
+                            <h4 class="font-bold text-slate-900 text-sm">M. Lekhana</h4>
+                            <p class="font-mono text-xs text-sky-700">25B11CS562</p>
+                            <div class="mt-2 text-xs text-slate-600 font-medium">Requirements & Documentation</div>
+                        </div>
+
+                        <div class="bg-gradient-to-b from-orange-50 to-white p-4 rounded-xl border border-orange-200">
+                            <div class="w-7 h-7 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center mb-2">2</div>
+                            <h4 class="font-bold text-slate-900 text-sm">G. Navya Sri</h4>
+                            <p class="font-mono text-xs text-orange-700">25B11CS321</p>
+                            <div class="mt-2 text-xs text-slate-600 font-medium">Entities, Attributes & Table Design</div>
+                        </div>
+
+                        <div class="bg-gradient-to-b from-emerald-50 to-white p-4 rounded-xl border border-emerald-200">
+                            <div class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center mb-2">3</div>
+                            <h4 class="font-bold text-slate-900 text-sm">K. Satya Reshmee</h4>
+                            <p class="font-mono text-xs text-emerald-700">25B11CS468</p>
+                            <div class="mt-2 text-xs text-slate-600 font-medium">ER Diagram & Relationship Modeling</div>
+                        </div>
+
+                        <div class="bg-gradient-to-b from-indigo-50 to-white p-4 rounded-xl border border-indigo-200">
+                            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center mb-2">4</div>
+                            <h4 class="font-bold text-slate-900 text-sm">K. Dhanush</h4>
+                            <p class="font-mono text-xs text-indigo-700">25B11CS456</p>
+                            <div class="mt-2 text-xs text-slate-600 font-medium">Keys, Integration & Presentation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Slide-Out Shopping Cart Drawer -->
+    <div id="cart-drawer-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden transition-opacity"></div>
+    <aside id="cart-drawer" class="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col transform translate-x-full transition-transform duration-300">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="shopping-bag" class="w-5 h-5 text-sky-600"></i>
+                <h3 class="font-bold text-slate-900 text-sm">Your Shopping Cart</h3>
+            </div>
+            <button onclick="toggleCartDrawer()" class="text-slate-400 hover:text-slate-700 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="cart-items-list">
+            <!-- Dynamic cart items -->
+        </div>
+
+        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3 text-xs">
+            <div class="flex justify-between text-slate-600">
+                <span>Subtotal:</span>
+                <span id="cart-subtotal" class="font-semibold text-slate-900">$0.00</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+                <span>Tax (5%):</span>
+                <span id="cart-tax">$0.00</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
+                <span>Total Amount:</span>
+                <span id="cart-total" class="text-sky-700">$0.00</span>
+            </div>
+            <button onclick="openCheckoutModal()" id="btn-checkout" disabled class="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-2.5 rounded-lg font-bold text-xs transition shadow-sm flex items-center justify-center gap-2">
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                <span>Proceed to Checkout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
+            <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-sky-900 text-white">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+                    <h3 class="font-bold text-sm">Checkout & DBMS Commit Simulation</h3>
+                </div>
+                <button onclick="closeCheckoutModal()" class="text-slate-300 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="checkout-form" onsubmit="handleCheckoutSubmit(event)" class="p-5 space-y-4 text-xs">
+                <!-- Customer Selection -->
+                <div class="space-y-1.5">
+                    <label class="font-bold text-slate-700 flex items-center justify-between">
+                        <span>Select Existing Customer (Customer_ID):</span>
+                        <a href="javascript:void(0)" onclick="toggleNewCustomerFields()" id="toggle-cust-link" class="text-sky-600 hover:underline text-[11px] font-normal">+ New Customer</a>
+                    </label>
+                    <select id="checkout-customer-select" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-sky-500">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <!-- New Customer Expandable Fields -->
+                <div id="new-customer-fields" class="hidden space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <span class="font-bold text-slate-800 text-[11px]">New Customer Registration:</span>
+                    <input type="text" id="new-cust-name" placeholder="Full Name" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                    <input type="email" id="new-cust-email" placeholder="Email Address" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="new-cust-phone" placeholder="Phone Number" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                        <input type="text" id="new-cust-address" placeholder="Shipping Address" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                    </div>
+                </div>
+
+                <!-- Payment Status Method -->
+                <div class="space-y-1.5">
+                    <label class="font-bold text-slate-700">Payment Status / Simulation:</label>
+                    <select id="checkout-payment-status" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-sky-500">
+                        <option value="Completed">Completed (Immediate settlement via UPI / Card)</option>
+                        <option value="Pending">Pending (Cash on Delivery / Bank verification)</option>
+                    </select>
+                </div>
+
+                <!-- Relational Impact Notice -->
+                <div class="bg-sky-50 p-3 rounded-lg border border-sky-200 text-sky-800 text-[11px] space-y-1">
+                    <p class="font-bold flex items-center gap-1.5">
+                        <i data-lucide="database" class="w-3.5 h-3.5 text-sky-600"></i>
+                        <span>Relational Transaction Impact:</span>
+                    </p>
+                    <p>Executing this order will atomically write to <code class="font-semibold text-slate-800">Order</code>, <code class="font-semibold text-slate-800">Order_Item</code>, <code class="font-semibold text-slate-800">Payment</code>, <code class="font-semibold text-slate-800">Delivery</code>, and decrement inventory in <code class="font-semibold text-slate-800">Product</code>.</p>
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeCheckoutModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium">Cancel</button>
+                    <button type="submit" id="btn-confirm-order" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-sm flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Confirm & Commit Order</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Success Relational Receipt Modal -->
+    <div id="order-success-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
+            <div class="p-5 text-center bg-gradient-to-b from-emerald-500 to-teal-600 text-white">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="check-check" class="w-7 h-7 text-white"></i>
+                </div>
+                <h3 class="text-lg font-bold">Order Committed to DBMS!</h3>
+                <p class="text-xs text-emerald-100 mt-1">Transaction committed successfully with referential integrity.</p>
+            </div>
+
+            <div class="p-5 space-y-3 text-xs" id="order-receipt-content">
+                <!-- Generated by JS -->
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2 text-xs">
+                <button onclick="closeOrderSuccessModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium">Close</button>
+                <button onclick="viewOrderInAdmin()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-bold flex items-center gap-1.5">
+                    <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                    <span>Inspect in DBMS Console</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record CRUD Modal (Add / Edit) -->
+    <div id="crud-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+                <h3 id="crud-modal-title" class="font-bold text-sm">Add Record</h3>
+                <button onclick="closeCrudModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="crud-form" onsubmit="handleCrudSubmit(event)" class="p-5 space-y-3 text-xs max-h-[450px] overflow-y-auto">
+                <div id="crud-form-fields" class="space-y-3">
+                    <!-- Injected dynamically based on table columns -->
+                </div>
+
+                <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+                    <button type="button" onclick="closeCrudModal()" class="px-4 py-1.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-bold shadow-sm">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Relational Dossier Modal (Drill-Down View) -->
+    <div id="order-dossier-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-200">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-indigo-900 text-white">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="folder-search" class="w-5 h-5 text-indigo-300"></i>
+                    <h3 class="font-bold text-sm" id="dossier-title">Order Relational Dossier</h3>
+                </div>
+                <button onclick="closeDossierModal()" class="text-slate-300 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 text-xs max-h-[500px] overflow-y-auto" id="dossier-content">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end text-xs">
+                <button onclick="closeDossierModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-semibold">Close Dossier</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members Modal -->
+    <div id="team-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
+            <div class="p-5 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Project Team & Supervision</h3>
+                    <p class="text-xs text-sky-300 mt-0.5">Department of Computer Science & Engineering</p>
+                </div>
+                <button onclick="closeTeamModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 text-xs">
+                <div class="bg-sky-50 p-3 rounded-xl border border-sky-100 flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold">KR</div>
+                    <div>
+                        <div class="text-[10px] text-sky-600 uppercase font-bold tracking-wider">Project Supervisor</div>
+                        <div class="font-bold text-slate-900 text-sm">Mr. K. RAJENDRA</div>
+                        <div class="text-slate-500 text-[11px]">Assistant Professor, Dept. of CSE</div>
+                    </div>
+                </div>
+
+                <div class="space-y-2.5">
+                    <span class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Project Team Members:</span>
+
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                        <div>
+                            <p class="font-bold text-slate-800">M. Lekhana</p>
+                            <p class="text-slate-500 text-[11px]">Requirements & Documentation</p>
+                        </div>
+                        <span class="font-mono bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-[11px] font-semibold">25b11cs562</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                        <div>
+                            <p class="font-bold text-slate-800">G. Navya Sri</p>
+                            <p class="text-slate-500 text-[11px]">Entities, Attributes & Table Design</p>
+                        </div>
+                        <span class="font-mono bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-[11px] font-semibold">25b11cs321</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                        <div>
+                            <p class="font-bold text-slate-800">K. Satya Reshmee</p>
+                            <p class="text-slate-500 text-[11px]">ER Diagram & Relationship Modeling</p>
+                        </div>
+                        <span class="font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-semibold">25b11cs468</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                        <div>
+                            <p class="font-bold text-slate-800">K. Dhanush</p>
+                            <p class="text-slate-500 text-[11px]">Keys, Integration & Presentation</p>
+                        </div>
+                        <span class="font-mono bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-[11px] font-semibold">25b11cs456</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end text-xs">
+                <button onclick="closeTeamModal()" class="px-4 py-1.5 bg-slate-800 text-white rounded-lg font-medium">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Main JavaScript Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
